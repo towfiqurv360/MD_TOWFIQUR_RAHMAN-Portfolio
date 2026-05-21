@@ -5,12 +5,41 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Cpu, FolderDot, LayoutGrid, Activity, Zap, FileDown, Menu, X, ChevronRight } from "lucide-react";
+import { createBrowserClient } from "@supabase/ssr";
 
 export default function Navbar() {
     const pathname = usePathname();
     const [hoveredLink, setHoveredLink] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+
+    const [resumeLink, setResumeLink] = useState("/Towfiqur_Rahman_CV.pdf");
+
+    useEffect(() => {
+        const fetchResumeLink = async () => {
+            try {
+                const supabase = createBrowserClient(
+                    process.env.NEXT_PUBLIC_SUPABASE_URL,
+                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+                );
+
+                const { data, error } = await supabase
+                    .from('resume_settings')
+                    .select('resume_url')
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .single();
+
+                if (!error && data?.resume_url) {
+                    setResumeLink(data.resume_url);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        fetchResumeLink();
+    }, []);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -113,7 +142,9 @@ export default function Navbar() {
 
                     <div className="flex items-center gap-5 relative z-[70]">
                         <a
-                            href="/Towfiqur_Rahman_CV.pdf"
+                            href={resumeLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             download
                             className="hidden xl:inline-flex group relative h-11 items-center justify-center overflow-hidden rounded-xl border border-cyan-400/50 bg-[#0a0c14] px-7 font-mono text-[11px] font-black tracking-[0.2em] text-cyan-400 transition-all duration-500 hover:bg-cyan-400 hover:text-black hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] cursor-pointer transform-gpu"
                         >
@@ -181,7 +212,9 @@ export default function Navbar() {
 
                             <motion.div variants={itemVariants} className="mt-4 sm:mt-6 mb-16 will-change-transform">
                                 <a
-                                    href="/Towfiqur_Rahman_CV.pdf"
+                                    href={resumeLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     download
                                     className="group relative flex items-center justify-center gap-4 p-5 sm:p-6 w-full rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 border border-cyan-400/50 text-white font-mono text-xs sm:text-sm font-black tracking-[0.3em] uppercase shadow-[0_10px_20px_rgba(34,211,238,0.2)] hover:shadow-[0_10px_30px_rgba(34,211,238,0.4)] active:scale-95 transition-all duration-300 cursor-pointer overflow-hidden transform-gpu"
                                 >
