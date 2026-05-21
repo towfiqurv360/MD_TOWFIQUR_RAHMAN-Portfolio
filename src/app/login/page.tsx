@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Mail, Lock, Key, ShieldAlert, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Key, ShieldAlert, CheckCircle, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -12,7 +12,8 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
-    const [mode, setMode] = useState("login"); 
+    const [mode, setMode] = useState("login");
+    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
     const supabase = createBrowserClient(
@@ -30,6 +31,7 @@ export default function LoginPage() {
         e.preventDefault();
         setError("");
         setMessage("");
+        setIsLoading(true);
 
         const { error } = await supabase.auth.signInWithPassword({
             email,
@@ -38,9 +40,13 @@ export default function LoginPage() {
 
         if (error) {
             setError("Authentication failed. Invalid credentials.");
+            setIsLoading(false);
         } else {
-            router.push("/admin/dashboard");
-            router.refresh();
+            setMessage("Authentication successful. Initializing dashboard...");
+            setTimeout(() => {
+                router.push("/admin/dashboard");
+                router.refresh();
+            }, 1500);
         }
     };
 
@@ -48,6 +54,7 @@ export default function LoginPage() {
         e.preventDefault();
         setError("");
         setMessage("");
+        setIsLoading(true);
 
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: `${window.location.origin}/login?mode=update`,
@@ -58,12 +65,14 @@ export default function LoginPage() {
         } else {
             setMessage("Recovery link transmitted successfully. Check your inbox.");
         }
+        setIsLoading(false);
     };
 
     const handleUpdatePassword = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
         setMessage("");
+        setIsLoading(true);
 
         const { error } = await supabase.auth.updateUser({
             password: newPassword,
@@ -71,17 +80,18 @@ export default function LoginPage() {
 
         if (error) {
             setError("Password update failed. Try again.");
+            setIsLoading(false);
         } else {
             setMessage("Password updated successfully. Redirecting to login...");
             setTimeout(() => {
                 setMode("login");
                 router.push("/login");
+                setIsLoading(false);
             }, 3000);
         }
     };
 
     return (
-        // UI Fix: Added pt-32 to push the content below the fixed Navbar
         <div className="min-h-screen bg-[#02040a] flex items-center justify-center px-6 pt-32 pb-12 font-sans selection:bg-cyan-500/30 selection:text-white">
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
                 <div className="absolute inset-0 bg-grid opacity-10"></div>
@@ -124,12 +134,13 @@ export default function LoginPage() {
                             <label className="text-[10px] text-cyan-400/80 font-mono uppercase tracking-widest font-bold ml-1">Admin_Identity</label>
                             <div className="relative">
                                 <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                                <input 
-                                    type="email" 
+                                <input
+                                    type="email"
                                     placeholder="admin@example.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full bg-[#02040a]/60 border border-white/10 rounded-xl pl-12 pr-4 py-3.5 text-sm text-white focus:border-cyan-400/60 outline-none transition-all font-mono placeholder-gray-700" 
+                                    disabled={isLoading}
+                                    className="w-full bg-[#02040a]/60 border border-white/10 rounded-xl pl-12 pr-4 py-3.5 text-sm text-white focus:border-cyan-400/60 outline-none transition-all font-mono placeholder-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                     required
                                 />
                             </div>
@@ -138,39 +149,42 @@ export default function LoginPage() {
                         <div className="space-y-2">
                             <div className="flex justify-between items-center ml-1">
                                 <label className="text-[10px] text-cyan-400/80 font-mono uppercase tracking-widest font-bold">Security_Pass</label>
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     onClick={() => setMode("forgot")}
-                                    className="text-[9px] text-gray-500 hover:text-cyan-400 font-mono uppercase tracking-widest transition-colors"
+                                    disabled={isLoading}
+                                    className="text-[9px] text-gray-500 hover:text-cyan-400 font-mono uppercase tracking-widest transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     Forgot?
                                 </button>
                             </div>
                             <div className="relative">
                                 <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                                <input 
-                                    type={showPassword ? "text" : "password"} 
+                                <input
+                                    type={showPassword ? "text" : "password"}
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full bg-[#02040a]/60 border border-white/10 rounded-xl pl-12 pr-12 py-3.5 text-sm text-white focus:border-cyan-400/60 outline-none transition-all font-mono placeholder-gray-700" 
+                                    disabled={isLoading}
+                                    className="w-full bg-[#02040a]/60 border border-white/10 rounded-xl pl-12 pr-12 py-3.5 text-sm text-white focus:border-cyan-400/60 outline-none transition-all font-mono placeholder-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                     required
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                                    disabled={isLoading}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                 </button>
                             </div>
                         </div>
 
-                        <button type="submit" className="w-full group relative px-8 py-4 bg-[#f5f5f7] text-black font-black rounded-xl overflow-hidden transition-all duration-300 active:scale-[0.98] cursor-pointer hover:shadow-[0_0_25px_rgba(34,211,238,0.3)] mt-2">
+                        <button type="submit" disabled={isLoading} className="w-full group relative px-8 py-4 bg-[#f5f5f7] text-black font-black rounded-xl overflow-hidden transition-all duration-300 active:scale-[0.98] cursor-pointer hover:shadow-[0_0_25px_rgba(34,211,238,0.3)] mt-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:shadow-none">
                             <span className="relative z-10 flex items-center justify-center gap-2 uppercase tracking-[0.2em] text-[11px] group-hover:text-white transition-colors duration-500">
-                                Initialize Access
+                                {isLoading ? <Loader2 size={16} className="animate-spin text-cyan-400" /> : "Initialize Access"}
                             </span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+                            {!isLoading && <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>}
                         </button>
                     </form>
                 )}
@@ -181,28 +195,30 @@ export default function LoginPage() {
                             <label className="text-[10px] text-cyan-400/80 font-mono uppercase tracking-widest font-bold ml-1">Registered_Email</label>
                             <div className="relative">
                                 <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                                <input 
-                                    type="email" 
+                                <input
+                                    type="email"
                                     placeholder="admin@example.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full bg-[#02040a]/60 border border-white/10 rounded-xl pl-12 pr-4 py-3.5 text-sm text-white focus:border-cyan-400/60 outline-none transition-all font-mono placeholder-gray-700" 
+                                    disabled={isLoading}
+                                    className="w-full bg-[#02040a]/60 border border-white/10 rounded-xl pl-12 pr-4 py-3.5 text-sm text-white focus:border-cyan-400/60 outline-none transition-all font-mono placeholder-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                     required
                                 />
                             </div>
                         </div>
 
-                        <button type="submit" className="w-full group relative px-8 py-4 bg-[#f5f5f7] text-black font-black rounded-xl overflow-hidden transition-all duration-300 active:scale-[0.98] cursor-pointer hover:shadow-[0_0_25px_rgba(34,211,238,0.3)] mt-2">
+                        <button type="submit" disabled={isLoading} className="w-full group relative px-8 py-4 bg-[#f5f5f7] text-black font-black rounded-xl overflow-hidden transition-all duration-300 active:scale-[0.98] cursor-pointer hover:shadow-[0_0_25px_rgba(34,211,238,0.3)] mt-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:shadow-none">
                             <span className="relative z-10 flex items-center justify-center gap-2 uppercase tracking-[0.2em] text-[11px] group-hover:text-white transition-colors duration-500">
-                                Transmit Link
+                                {isLoading ? <Loader2 size={16} className="animate-spin text-cyan-400" /> : "Transmit Link"}
                             </span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+                            {!isLoading && <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>}
                         </button>
 
-                        <button 
-                            type="button" 
+                        <button
+                            type="button"
                             onClick={() => { setMode("login"); setError(""); setMessage(""); }}
-                            className="w-full text-center text-[10px] text-gray-500 hover:text-white font-mono uppercase tracking-widest transition-colors pt-2"
+                            disabled={isLoading}
+                            className="w-full text-center text-[10px] text-gray-500 hover:text-white font-mono uppercase tracking-widest transition-colors pt-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Return to Login
                         </button>
@@ -215,29 +231,31 @@ export default function LoginPage() {
                             <label className="text-[10px] text-cyan-400/80 font-mono uppercase tracking-widest font-bold ml-1">New_Security_Pass</label>
                             <div className="relative">
                                 <Key size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                                <input 
-                                    type={showPassword ? "text" : "password"} 
+                                <input
+                                    type={showPassword ? "text" : "password"}
                                     placeholder="Enter new password"
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
-                                    className="w-full bg-[#02040a]/60 border border-white/10 rounded-xl pl-12 pr-12 py-3.5 text-sm text-white focus:border-cyan-400/60 outline-none transition-all font-mono placeholder-gray-700" 
+                                    disabled={isLoading}
+                                    className="w-full bg-[#02040a]/60 border border-white/10 rounded-xl pl-12 pr-12 py-3.5 text-sm text-white focus:border-cyan-400/60 outline-none transition-all font-mono placeholder-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                     required
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                                    disabled={isLoading}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                 </button>
                             </div>
                         </div>
 
-                        <button type="submit" className="w-full group relative px-8 py-4 bg-[#f5f5f7] text-black font-black rounded-xl overflow-hidden transition-all duration-300 active:scale-[0.98] cursor-pointer hover:shadow-[0_0_25px_rgba(34,211,238,0.3)] mt-2">
+                        <button type="submit" disabled={isLoading} className="w-full group relative px-8 py-4 bg-[#f5f5f7] text-black font-black rounded-xl overflow-hidden transition-all duration-300 active:scale-[0.98] cursor-pointer hover:shadow-[0_0_25px_rgba(34,211,238,0.3)] mt-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:shadow-none">
                             <span className="relative z-10 flex items-center justify-center gap-2 uppercase tracking-[0.2em] text-[11px] group-hover:text-white transition-colors duration-500">
-                                Authorize Change
+                                {isLoading ? <Loader2 size={16} className="animate-spin text-cyan-400" /> : "Authorize Change"}
                             </span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+                            {!isLoading && <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>}
                         </button>
                     </form>
                 )}

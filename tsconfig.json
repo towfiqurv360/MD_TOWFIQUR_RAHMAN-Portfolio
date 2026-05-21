@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "src/app/page.js", "src/app/layout.js", "src/app/admin/messages/page.jsx", "src/app/admin/dashboard/layout.jsx", "src/app/admin/dashboard/page.jsx"  ],
+, "src/app/page.js", "src/app/layout.js", "src/app/admin/messages/page.jsx", "src/app/admin/dashboard/layout.jsx", "src/app/admin/dashboard/page.jsx", "src/app/login/page.tsx"  ],
   "exclude": ["node_modules"]
 }
