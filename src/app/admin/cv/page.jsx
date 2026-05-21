@@ -31,18 +31,38 @@ export default function CVManager() {
 
         setStatus({ type: "loading", text: "Uploading transmission document..." });
 
-        const { error } = await supabase.storage
-            .from("portfolio-resume")
-            .upload("Towfiqur_Rahman_CV.pdf", file, {
-                cacheControl: "0",
-                upsert: true,
-            });
+        const uniqueFileName = `Towfiqur_Rahman_CV_${Date.now()}.pdf`;
 
-        if (error) {
-            setStatus({ type: "error", text: "Upload failed: " + error.message });
-        } else {
+        try {
+            const { error: uploadError } = await supabase.storage
+                .from("portfolio-resume")
+                .upload(uniqueFileName, file, {
+                    cacheControl: "3600",
+                    upsert: false,
+                });
+
+            if (uploadError) throw uploadError;
+
+            const { data: publicUrlData } = supabase.storage
+                .from("portfolio-resume")
+                .getPublicUrl(uniqueFileName);
+
+            const finalUrl = publicUrlData.publicUrl;
+
+            const { error: dbError } = await supabase
+                .from("resume_settings")
+                .insert([{ resume_url: finalUrl }]);
+
+            if (dbError) throw dbError;
+
             setStatus({ type: "success", text: "CV document updated and deployed successfully." });
             setFile(null);
+
+            const fileInput = document.getElementById('cv-upload-input');
+            if (fileInput) fileInput.value = "";
+
+        } catch (error) {
+            setStatus({ type: "error", text: "Upload failed: " + error.message });
         }
     };
 
@@ -61,8 +81,8 @@ export default function CVManager() {
                 <div className="bg-[#0a0c14] border border-white/10 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
                     {status.text && (
                         <div className={`flex items-center gap-2 p-4 rounded-xl text-xs font-mono border ${status.type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
-                                status.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
-                                    'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
+                            status.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
+                                'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
                             }`}>
                             {status.type === 'error' && <AlertTriangle size={16} />}
                             {status.type === 'success' && <CheckCircle size={16} />}
@@ -74,6 +94,7 @@ export default function CVManager() {
                     <form onSubmit={handleUpload} className="space-y-6">
                         <div className="border-2 border-dashed border-white/10 rounded-xl p-8 text-center bg-[#02040a]/40 hover:border-cyan-500/30 transition-all relative">
                             <input
+                                id="cv-upload-input"
                                 type="file"
                                 accept=".pdf"
                                 onChange={handleFileChange}
