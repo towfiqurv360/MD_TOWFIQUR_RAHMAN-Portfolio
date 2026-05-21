@@ -12,7 +12,6 @@ export default function ContactPage() {
     const [message, setMessage] = useState("");
     const [status, setStatus] = useState({ type: "", text: "" });
 
-    // FIX: Removed the '!' signs which were causing the syntax error in JSX
     const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -145,8 +144,8 @@ export default function ContactPage() {
 
                         {status.text && (
                             <div className={`flex items-center gap-2 p-4 rounded-xl mb-6 text-xs font-mono border ${status.type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
-                                    status.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
-                                        'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
+                                status.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
+                                    'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
                                 }`}>
                                 {status.type === 'error' && <ShieldAlert size={16} />}
                                 {status.type === 'success' && <CheckCircle size={16} />}

@@ -43,7 +43,7 @@ export default function AdminLayout({ children }) {
 
     return (
         <div className="min-h-screen bg-[#02040a] flex font-sans text-white selection:bg-cyan-500/30">
-            <button 
+            <button
                 onClick={() => setIsMobileOpen(!isMobileOpen)}
                 className="lg:hidden fixed top-4 right-4 z-50 p-2 bg-[#0a0c14] border border-white/10 rounded-lg text-cyan-400"
             >
@@ -68,13 +68,12 @@ export default function AdminLayout({ children }) {
                     {navLinks.map((link) => {
                         const isActive = pathname === link.href;
                         return (
-                            <Link 
-                                key={link.name} 
+                            <Link
+                                key={link.name}
                                 href={link.href}
-                                onClick={() => { setIsMobileOpen(false); if(link.name === "Messages") setUnreadCount(0); }}
-                                className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all font-mono text-[11px] uppercase tracking-widest font-bold ${
-                                    isActive ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20" : "text-gray-400 hover:bg-white/5 hover:text-white"
-                                }`}
+                                onClick={() => { setIsMobileOpen(false); if (link.name === "Messages") setUnreadCount(0); }}
+                                className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all font-mono text-[11px] uppercase tracking-widest font-bold ${isActive ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20" : "text-gray-400 hover:bg-white/5 hover:text-white"
+                                    }`}
                             >
                                 <div className="flex items-center gap-3">
                                     {link.icon} {link.name}
@@ -101,7 +100,7 @@ export default function AdminLayout({ children }) {
                             </p>
                         </div>
                     </div>
-                    <button 
+                    <button
                         onClick={handleLogout}
                         className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl hover:bg-red-500 hover:text-white transition-all font-mono text-[10px] font-bold uppercase"
                     >
